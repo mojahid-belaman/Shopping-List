@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:groceries/data/dummy_items.dart';
-import 'package:groceries/widgets/grocery_item_widget.dart';
+import 'package:groceries/widgets/grocery_list.dart';
 
 class Groceries extends StatelessWidget {
   const Groceries({super.key});
@@ -11,14 +11,10 @@ class Groceries extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Your Groceries'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            for (final grocerie in groceryItems)
-              GroceryItemWidget(
-                groceryItem: grocerie,
-              )
-          ],
+      body: ListView.builder(
+        itemCount: groceryItems.length,
+        itemBuilder: (ctx, index) => GroceryList(
+          groceryItem: groceryItems[index],
         ),
       ),
     );
