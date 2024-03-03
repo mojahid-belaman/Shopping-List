@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:groceries/data/categories.dart';
 import 'package:groceries/modal/category.dart';
-import 'package:groceries/modal/grocery_item.dart';
 
 class NewGrocery extends StatefulWidget {
   const NewGrocery({super.key});
@@ -18,14 +21,24 @@ class _NewGroceryState extends State<NewGrocery> {
   var _enteredQuantity = 1;
   var _enteredCategory = categories[Categories.convenience]!;
 
-  void _submitGrocery() {
+  void _submitGrocery() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Navigator.of(context).pop(GroceryItem(
-          id: DateTime.now().toString(),
-          name: _eneteredName,
-          quantity: _enteredQuantity,
-          category: _enteredCategory));
+      final url = Uri.https('flutter-grocery-cfefa-default-rtdb.firebaseio.com',
+          'Groceries.json');
+      final response = await http.post(url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'name': _eneteredName,
+            'quantity': _enteredQuantity,
+            'category': _enteredCategory.name
+          }));
+      print(response.body);
+      print(response.statusCode);
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
     }
   }
 
