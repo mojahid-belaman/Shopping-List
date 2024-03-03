@@ -29,7 +29,7 @@ class _GroceriesState extends State<Groceries> {
     final url = Uri.https(
         'flutter-grocery-cfefa-default-rtdb.firebaseio.com', 'Groceries.json');
     final response = await http.get(url);
-    final Map<String, dynamic> groceries = json.  (response.body);
+    final Map<String, dynamic> groceries = json.decode(response.body);
     final List<GroceryItem> listData = [];
 
     for (final grocery in groceries.entries) {
@@ -47,14 +47,17 @@ class _GroceriesState extends State<Groceries> {
   }
 
   void _addGrocery() async {
-    await Navigator.of(context).push<GroceryItem>(
+    final newGrocery = await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
         builder: (ctx) {
           return const NewGrocery();
         },
       ),
     );
-    _loadGroceries();
+    if (newGrocery == null) return;
+    setState(() {
+      _groceryItems.add(newGrocery);
+    });
   }
 
   void _removeGrocery(GroceryItem grocery) {
