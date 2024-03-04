@@ -21,30 +21,38 @@ class _NewGroceryState extends State<NewGrocery> {
   var _eneteredName = '';
   var _enteredQuantity = 1;
   var _enteredCategory = categories[Categories.convenience]!;
+  bool _isSending = false;
 
   void _submitGrocery() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      setState(() {
+        _isSending = true;
+      });
       final url = Uri.https('flutter-grocery-cfefa-default-rtdb.firebaseio.com',
           'Groceries.json');
-      final response = await http.post(url,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: json.encode({
-            'name': _eneteredName,
-            'quantity': _enteredQuantity,
-            'category': _enteredCategory.name
-          }));
-      final Map<String, dynamic> data = json.decode(response.body);
-      if (!context.mounted) return;
-      Navigator.of(context).pop(
-        GroceryItem(
-            id: data['name'],
-            name: _eneteredName,
-            quantity: _enteredQuantity,
-            category: _enteredCategory),
-      );
+      try {
+        final response = await http.post(url,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'name': _eneteredName,
+              'quantity': _enteredQuantity,
+              'category': _enteredCategory.name
+            }));
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (!context.mounted) return;
+        Navigator.of(context).pop(
+          GroceryItem(
+              id: data['name'],
+              name: _eneteredName,
+              quantity: _enteredQuantity,
+              category: _enteredCategory),
+        );
+      } catch (e) {
+        print(e.toString());
+      }
     }
   }
 
@@ -139,18 +147,28 @@ class _NewGroceryState extends State<NewGrocery> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                      onPressed: () {
-                        _formKey.currentState!.reset();
-                      },
+                      onPressed: _isSending
+                          ? null
+                          : () {
+                              _formKey.currentState!.reset();
+                            },
                       child: const Text('Reset')),
                   const SizedBox(
                     width: 10,
                   ),
                   ElevatedButton(
-                      onPressed: () {
-                        _submitGrocery();
-                      },
-                      child: const Text('Add Grocery'))
+                      onPressed: _isSending
+                          ? null
+                          : () {
+                              _submitGrocery();
+                            },
+                      child: _isSending
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(),
+                            )
+                          : const Text('Add Grocery'))
                 ],
               ),
             ],
